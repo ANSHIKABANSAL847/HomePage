@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  featuredIds,
+  heroPhotos,
   categories,
   combos,
   dishes,
-  extraIds,
   restaurant,
   type Combo,
   type Dish,
@@ -32,25 +33,22 @@ const copy = {
   en: {
     search: "Search dishes, drinks, combos…",
     myOrder: "My order",
-    heroEyebrow: "Welcome to",
-    heroTitle: "Explore the Menu.",
-    heroTitle2: "Order Directly From Your Table.",
-    heroSub: "Pick what you like, add it to your order and we’ll bring it right to you.",
-    start: "Start your order",
-    browse: "Browse full menu",
-    step1: "Choose your dishes",
-    step1s: "Tap any dish for details",
-    step2: "Tell us how you like it",
-    step2s: "Spice level & cooking notes",
-    step3: "Place your order",
-    step3s: "We serve it at your table",
+    upNext: "Up next",
+    explore: "Explore full menu",
+    addToOrder: "Add to order",
+    popular: "Bestsellers",
     popularEyebrow: "Guest favourites",
-    popular: "Most ordered",
-    popularSub: "Our guests’ top picks this month",
-    combosEyebrow: "Better together",
-    combos: "Combos & special offers",
-    goesWell: "Goes well with your meal",
-    menuEyebrow: "Everything we serve",
+    seeDetails: "See details",
+    popularSub: "Our most-ordered dishes, along with a few more you’ll love.",
+    prevDish: "Previous dish",
+    nextDish: "Next dish",
+    drinks: "Drinks & beverages",
+    drinksSub: "Fresh coolers, coffee and chai to go with your meal.",
+    drinksEyebrow: "Refreshments",
+    viewAllDrinks: "View all drinks",
+    desserts: "Desserts",
+    dessertsSub: "Sweet endings",
+    viewAll: "View all",
     menu: "Full menu",
     menuSub: "Pick a category to see its dishes",
     vegOnly: "Veg only",
@@ -68,25 +66,22 @@ const copy = {
   hi: {
     search: "डिश, ड्रिंक, कॉम्बो खोजें…",
     myOrder: "मेरा ऑर्डर",
-    heroEyebrow: "स्वागत है",
-    heroTitle: "मेन्यू देखें।",
-    heroTitle2: "अपनी टेबल से सीधे ऑर्डर करें।",
-    heroSub: "जो पसंद हो चुनें, ऑर्डर में जोड़ें — हम आपकी टेबल पर ले आएंगे।",
-    start: "ऑर्डर शुरू करें",
-    browse: "पूरा मेन्यू",
-    step1: "डिश चुनें",
-    step1s: "डिटेल के लिए डिश पर टैप करें",
-    step2: "अपनी पसंद बताएं",
-    step2s: "तीखापन और कुकिंग नोट",
-    step3: "ऑर्डर करें",
-    step3s: "हम टेबल पर परोसेंगे",
+    upNext: "अगला",
+    explore: "पूरा मेन्यू देखें",
+    addToOrder: "ऑर्डर में जोड़ें",
+    popular: "बेस्टसेलर",
     popularEyebrow: "मेहमानों की पसंद",
-    popular: "सबसे ज़्यादा ऑर्डर",
-    popularSub: "इस महीने मेहमानों की पसंद",
-    combosEyebrow: "साथ में बेहतर",
-    combos: "कॉम्बो और स्पेशल ऑफ़र",
-    goesWell: "खाने के साथ",
-    menuEyebrow: "हमारा पूरा मेन्यू",
+    seeDetails: "डिटेल देखें",
+    popularSub: "सबसे ज़्यादा ऑर्डर होने वाली डिश, और कुछ और जो आपको पसंद आएंगी।",
+    prevDish: "पिछली डिश",
+    nextDish: "अगली डिश",
+    drinks: "ड्रिंक्स",
+    drinksSub: "खाने के साथ ताज़ा कूलर, कॉफ़ी और चाय।",
+    drinksEyebrow: "ताज़गी",
+    viewAllDrinks: "सभी ड्रिंक्स देखें",
+    desserts: "मिठाई",
+    dessertsSub: "मीठा अंत",
+    viewAll: "सब देखें",
     menu: "पूरा मेन्यू",
     menuSub: "डिश देखने के लिए कैटेगरी चुनें",
     vegOnly: "सिर्फ़ वेज",
@@ -103,10 +98,55 @@ const copy = {
   },
 } satisfies Record<Lang, Record<string, string>>;
 
+// Banner slides: welcome-style messages only (no prices or offers). One per photo in `heroPhotos`.
+const slideCopy: Record<Lang, { eyebrow: string; title: string; accent: string; text: string }[]> = {
+  en: [
+    {
+      eyebrow: `Welcome to ${restaurant.name}`,
+      title: "Authentic Indian flavours.",
+      accent: "Order right from your table.",
+      text: "Browse the full menu, choose your dishes and send your order straight to the kitchen.",
+    },
+    {
+      eyebrow: "Easy ordering",
+      title: "Your table, your pace.",
+      accent: "Order now, add more anytime.",
+      text: "Start with a few dishes and keep adding through your meal. Everything comes to your table.",
+    },
+    {
+      eyebrow: "We’re here to help",
+      title: "Service is one tap away.",
+      accent: "Call a waiter, ask for water or get the bill.",
+      text: "Use the buttons at the bottom of the screen whenever you need us.",
+    },
+  ],
+  hi: [
+    {
+      eyebrow: `${restaurant.name} में आपका स्वागत है`,
+      title: "असली भारतीय स्वाद।",
+      accent: "सीधे अपनी टेबल से ऑर्डर करें।",
+      text: "पूरा मेन्यू देखें, डिश चुनें और ऑर्डर सीधे किचन तक भेजें।",
+    },
+    {
+      eyebrow: "आसान ऑर्डर",
+      title: "आपकी टेबल, आपकी रफ़्तार।",
+      accent: "अभी ऑर्डर करें, बाद में और जोड़ें।",
+      text: "कुछ डिश से शुरू करें और खाने के दौरान और जोड़ते रहें। सब कुछ आपकी टेबल पर आएगा।",
+    },
+    {
+      eyebrow: "हम मदद के लिए हैं",
+      title: "सर्विस बस एक टैप दूर।",
+      accent: "वेटर बुलाएं, पानी मंगाएं या बिल लें।",
+      text: "जब भी ज़रूरत हो, स्क्रीन के नीचे दिए बटन इस्तेमाल करें।",
+    },
+  ],
+};
+
 const SPICE_PREFS = ["Mild", "Medium", "Spicy"];
 const QUICK_NOTES = ["No onion", "No garlic", "Less oil", "Jain"];
 // How long a service button shows "Requested" in this demo. Real status comes from the staff app.
 const SERVICE_COOLDOWN_MS = 30_000;
+const SLIDE_MS = 7000;
 
 const rupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 const comboToItem = (c: Combo): Item => ({ ...c, description: c.includes, veg: true });
@@ -121,9 +161,10 @@ const iconPaths = {
   close: "M6 6l12 12M18 6 6 18",
   check: "M5 12.5 10 17l9-10",
   up: "M12 19V5m-6 6 6-6 6 6",
-  note: "M5 4h14v12l-4 4H5V4Zm10 12v4m0-4h4M8 9h8m-8 4h5",
-  plate: "M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z",
   chat: "M5 5h14v10H9l-4 4V5Z",
+  left: "m15 6-6 6 6 6",
+  right: "m9 6 6 6-6 6",
+  plus: "M12 5v14M5 12h14",
 } as const;
 
 function Icon({ name, size = 18 }: { name: keyof typeof iconPaths; size?: number }) {
@@ -174,24 +215,19 @@ function SpiceMeter({ level }: { level?: number }) {
 
 function SectionHead({
   id,
-  eyebrow,
   title,
   sub,
   children,
 }: {
   id: string;
-  eyebrow: string;
   title: string;
   sub?: string;
   children?: React.ReactNode;
 }) {
   return (
     <div className="section-head">
-      <div>
-        <span className="eyebrow">{eyebrow}</span>
-        <h2 id={id}>{title}</h2>
-        {sub && <p className="muted">{sub}</p>}
-      </div>
+      <h2 id={id}>{title}</h2>
+      {sub && <p className="muted">{sub}</p>}
       {children}
     </div>
   );
@@ -200,17 +236,26 @@ function SectionHead({
 function AddControl({
   qty,
   label,
+  name,
   onAdd,
   onRemove,
   size = "md",
 }: {
   qty: number;
   label: string;
+  name?: string;
   onAdd: () => void;
   onRemove: () => void;
-  size?: "md" | "sm";
+  size?: "md" | "sm" | "round";
 }) {
   if (qty === 0) {
+    if (size === "round") {
+      return (
+        <button className="add-round" type="button" onClick={onAdd} aria-label={`${label} ${name ?? ""}`.trim()}>
+          <Icon name="plus" size={18} />
+        </button>
+      );
+    }
     return (
       <button className={`add-btn add-btn-${size}`} type="button" onClick={onAdd}>
         {label} <span aria-hidden="true">+</span>
@@ -218,13 +263,22 @@ function AddControl({
     );
   }
   return (
-    <div className={`stepper add-btn-${size}`}>
+    <div className={`stepper add-btn-${size === "round" ? "sm" : size}`}>
       <button type="button" onClick={onRemove} aria-label="Remove one">−</button>
       <span aria-live="polite">{qty}</span>
       <button type="button" onClick={onAdd} aria-label="Add one">+</button>
     </div>
   );
 }
+
+type CardProps = {
+  item: Item;
+  qty: number;
+  label: string;
+  onAdd: () => void;
+  onRemove: () => void;
+  onOpen: () => void;
+};
 
 export default function Home() {
   const [lang, setLang] = useState<Lang>("en");
@@ -240,6 +294,8 @@ export default function Home() {
   const [toast, setToast] = useState<string | null>(null);
   const [bump, setBump] = useState(0);
   const [showTop, setShowTop] = useState(false);
+  const [slide, setSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
   const t = copy[lang];
 
   useEffect(() => {
@@ -258,6 +314,22 @@ export default function Home() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  const slides = heroPhotos.flatMap((p, i) => {
+    const c = slideCopy[lang][i];
+    return c ? [{ key: `slide-${i}`, ...c, ...p }] : [];
+  });
+
+  // Auto-advance the banner unless the guest is interacting with it or prefers less motion.
+  // Restarts on every slide change, so manual navigation always gets a full SLIDE_MS.
+  useEffect(() => {
+    if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setTimeout(() => setSlide((s) => (s + 1) % slides.length), SLIDE_MS);
+    return () => window.clearTimeout(id);
+  }, [slide, paused, slides.length]);
+
+  const goTo = (i: number) => setSlide((i + slides.length) % slides.length);
+  const [swipeX, setSwipeX] = useState<number | null>(null);
 
   const qtyOf = (id: string) => cart.reduce((s, l) => s + (l.itemId === id ? l.qty : 0), 0);
   const itemCount = cart.reduce((s, l) => s + l.qty, 0);
@@ -311,11 +383,19 @@ export default function Home() {
     () =>
       dishes
         .filter((d) => d.orderRank !== undefined)
-        .sort((a, b) => a.orderRank! - b.orderRank!)
-        .slice(0, 4),
+        .sort((a, b) => a.orderRank! - b.orderRank!),
     [],
   );
-  const extras = extraIds.map((id) => dishes.find((d) => d.id === id)!).filter(Boolean);
+  // Slider items: ranked bestsellers first (labelled by rank), then featured dishes (labelled by category).
+  const bestItems = useMemo(() => {
+    const ranked = popular.map((d) => ({ dish: d, tag: d.orderRank === 1 ? "#1 Best seller" : `#${d.orderRank} Most ordered` }));
+    const more = featuredIds
+      .map((id) => dishes.find((d) => d.id === id))
+      .filter((d): d is Dish => !!d && d.orderRank === undefined)
+      .map((d) => ({ dish: d, tag: categories.find((c) => c.id === d.category)?.label ?? "" }));
+    return [...ranked, ...more];
+  }, [popular]);
+  const inCategory = (id: string) => dishes.filter((d) => d.category === id);
   const results = query.trim()
     ? dishes.filter((d) => `${d.name} ${d.description}`.toLowerCase().includes(query.trim().toLowerCase()))
     : [];
@@ -331,14 +411,27 @@ export default function Home() {
   const activeLabel = categories.find((c) => c.id === activeCategory)?.label ?? "";
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const openCategory = (id: string) => {
+    setActiveCategory(id);
+    window.setTimeout(() => scrollTo("menu"), 30);
+  };
 
-  const rowProps = (item: Item) => ({
+  const cardProps = (item: Item): CardProps => ({
     item,
     qty: qtyOf(item.id),
     label: t.add,
     onAdd: () => addLine(item),
     onRemove: () => removeOne(item.id),
     onOpen: () => setSelected(item),
+  });
+
+  const promoProps = (c: Combo) => ({
+    combo: c,
+    qty: qtyOf(c.id),
+    label: t.addToOrder,
+    onAdd: () => addLine(comboToItem(c)),
+    onRemove: () => removeOne(c.id),
+    onOpen: () => setSelected(comboToItem(c)),
   });
 
   return (
@@ -392,10 +485,8 @@ export default function Home() {
         {query.trim() ? (
           <section className="section section-first" aria-labelledby="results-title">
             <div className="section-head">
-              <div>
-                <span className="eyebrow">{plural(results.length)}</span>
-                <h2 id="results-title">Results for “{query.trim()}”</h2>
-              </div>
+              <h2 id="results-title">Results for “{query.trim()}”</h2>
+              <p className="muted">{plural(results.length)}</p>
               <button className="link" type="button" onClick={() => setQuery("")}>Clear</button>
             </div>
             {results.length === 0 ? (
@@ -409,8 +500,7 @@ export default function Home() {
                       type="button"
                       onClick={() => {
                         setQuery("");
-                        setActiveCategory(c.id);
-                        window.setTimeout(() => scrollTo("menu"), 50);
+                        openCategory(c.id);
                       }}
                     >
                       {c.label}
@@ -420,137 +510,174 @@ export default function Home() {
               </div>
             ) : (
               <div className="list-grid">
-                {results.map((d) => <DishRow key={d.id} {...rowProps(d)} />)}
+                {results.map((d) => <DishRow key={d.id} {...cardProps(d)} />)}
               </div>
             )}
           </section>
         ) : (
           <>
-            {/* 1. Welcome + food visual: the single primary banner */}
-            <section className="hero" aria-labelledby="hero-title">
-              <Photo className="hero-photo" src={restaurant.heroPhoto} alt="A freshly cooked pot of biryani" eager />
-              <div className="hero-copy">
-                <span className="eyebrow light">{t.heroEyebrow} {restaurant.name}</span>
-                <h1 id="hero-title">
-                  {t.heroTitle}
-                  <span>{t.heroTitle2}</span>
-                </h1>
-                <p>{t.heroSub}</p>
-                <div className="hero-actions">
-                  <button className="cta" type="button" onClick={() => scrollTo("popular")}>
-                    {t.start} <Icon name="arrow" />
-                  </button>
-                  <button className="cta-ghost" type="button" onClick={() => scrollTo("menu")}>
-                    {t.browse}
-                  </button>
-                </div>
-              </div>
+            {/* 1. Banner carousel: welcome first, then real combos */}
+            <section
+              className={`hero${paused ? " is-paused" : ""}`}
+              aria-roledescription="carousel"
+              aria-label="Featured"
+              style={{ "--slide-ms": `${SLIDE_MS}ms` } as React.CSSProperties}
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+              onFocus={() => setPaused(true)}
+              onBlur={() => setPaused(false)}
+              onPointerDown={(e) => { if (e.pointerType !== "mouse") setSwipeX(e.clientX); }}
+              onPointerUp={(e) => {
+                if (swipeX === null) return;
+                const dx = e.clientX - swipeX;
+                if (Math.abs(dx) > 50) goTo(slide + (dx < 0 ? 1 : -1));
+                setSwipeX(null);
+              }}
+              onPointerCancel={() => setSwipeX(null)}
+            >
+              {slides.map((s, i) => {
+                const Title = i === 0 ? "h1" : "h2";
+                const active = i === slide;
+                return (
+                  <div
+                    key={s.key}
+                    className={`hero-slide${active ? " is-active" : ""}`}
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label={`${i + 1} of ${slides.length}`}
+                    aria-hidden={!active}
+                    inert={!active}
+                  >
+                    <Photo className="hero-photo" src={s.photo} alt={s.alt} eager={i === 0} />
+                    <div className="hero-copy">
+                      <span className="eyebrow">{s.eyebrow}</span>
+                      <Title className="hero-title">
+                        {s.title}
+                        <span>{s.accent}</span>
+                      </Title>
+                      <p>{s.text}</p>
+                      <button className="cta hero-cta" type="button" onClick={() => scrollTo("menu")}>
+                        {t.explore} <Icon name="arrow" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {slides.length > 1 && (
+                <>
+                  {/* Back arrow + a preview card of the next slide. */}
+                  <div className="hero-controls">
+                    <button className="hero-prev" type="button" onClick={() => goTo(slide - 1)} aria-label="Previous slide">
+                      <Icon name="left" size={22} />
+                    </button>
+                    {(() => {
+                      const next = slides[(slide + 1) % slides.length];
+                      return (
+                        <button className="hero-next" type="button" onClick={() => goTo(slide + 1)} aria-label={`Next slide: ${next.title}`}>
+                          <Photo key={next.key} className="hero-next-photo" src={next.photo} alt="" />
+                          <span className="hero-next-copy">
+                            <small>{t.upNext}</small>
+                            <strong>{next.title}</strong>
+                          </span>
+                          <span className="hero-next-icon"><Icon name="right" size={20} /></span>
+                        </button>
+                      );
+                    })()}
+                  </div>
+                  <div className="hero-dots">
+                    <span className="hero-count" aria-hidden="true">
+                      {String(slide + 1).padStart(2, "0")}<small> / {String(slides.length).padStart(2, "0")}</small>
+                    </span>
+                    {slides.map((s, i) => (
+                      <button
+                        key={s.key}
+                        type="button"
+                        className={i === slide ? "is-on" : ""}
+                        onClick={() => goTo(i)}
+                        aria-label={`Show slide ${i + 1}`}
+                        aria-current={i === slide}
+                      >
+                        {/* Fills over the slide's display time; restarts when the slide or pause state changes. */}
+                        {i === slide && <span key={`${slide}-${paused}`} className="hero-progress" />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </section>
 
-            {/* How ordering works: helps first-time guests, no promotions */}
-            <ol className="steps" aria-label="How to order">
-              <li><span className="step-icon"><Icon name="plate" size={20} /></span><span><strong>{t.step1}</strong><small>{t.step1s}</small></span></li>
-              <li><span className="step-icon"><Icon name="note" size={20} /></span><span><strong>{t.step2}</strong><small>{t.step2s}</small></span></li>
-              <li><span className="step-icon"><Icon name="check" size={20} /></span><span><strong>{t.step3}</strong><small>{t.step3s}</small></span></li>
-            </ol>
-
-            {/* 2. Popular dishes */}
-            {popular.length > 0 && (
-              <section className="section" id="popular" aria-labelledby="popular-title">
-                <SectionHead id="popular-title" eyebrow={t.popularEyebrow} title={t.popular} sub={t.popularSub}>
-                  <button className="link" type="button" onClick={() => scrollTo("menu")}>
-                    {t.menu} <Icon name="arrow" size={16} />
-                  </button>
-                </SectionHead>
-                <div className="popular-grid">
-                  {popular.map((d) => (
-                    <article className="dish-card" key={d.id}>
-                      <button className="dish-media" type="button" onClick={() => setSelected(d)} aria-label={`See details for ${d.name}`}>
-                        <Photo className="dish-photo" src={d.photo} alt={d.name} />
-                        <span className="rank">#{d.orderRank}</span>
+            {/* 2. Bestsellers slider: round plates on a plain band, the centre one highlighted */}
+            {bestItems.length > 0 && (
+              <section className="section best-band" id="popular" aria-labelledby="popular-title">
+                <div className="best-inner">
+                  <div className="best-head">
+                    <span className="eyebrow">{t.popularEyebrow}</span>
+                    <h2 id="popular-title">{t.popular}</h2>
+                    <p>{t.popularSub}</p>
+                  </div>
+                  <PlateCarousel
+                    items={bestItems}
+                    cardFor={cardProps}
+                    after={
+                      <button className="link" type="button" onClick={() => scrollTo("menu")}>
+                        {t.viewAll} <Icon name="arrow" size={16} />
                       </button>
-                      <div className="dish-body">
-                        <button className="dish-title" type="button" onClick={() => setSelected(d)}>
-                          <VegMark veg={d.veg} /> {d.name}
-                        </button>
-                        <SpiceMeter level={d.spice} />
-                        <p>{d.description}</p>
-                        <div className="dish-foot">
-                          <strong>{rupees(d.price)}</strong>
-                          <AddControl qty={qtyOf(d.id)} label={t.add} onAdd={() => addLine(d)} onRemove={() => removeOne(d.id)} />
-                        </div>
-                      </div>
-                    </article>
-                  ))}
+                    }
+                    detailsLabel={t.seeDetails}
+                    prevLabel={t.prevDish}
+                    nextLabel={t.nextDish}
+                  />
                 </div>
               </section>
             )}
 
-            {/* 3. Combos, offers and add-ons: secondary, after food discovery */}
-            <section className="section" aria-labelledby="combos-title">
-              <SectionHead id="combos-title" eyebrow={t.combosEyebrow} title={t.combos} />
-              <div className="extras-layout">
-                <div className="combo-list">
-                  {combos.map((c) => (
-                    <article className="combo-card" key={c.id}>
-                      <button className="combo-media" type="button" onClick={() => setSelected(comboToItem(c))} aria-label={`See details for ${c.name}`}>
-                        <Photo className="combo-photo" src={c.photo} alt={c.name} />
-                      </button>
-                      <div className="combo-body">
-                        <span className="tag">{c.regularPrice ? `Save ${rupees(c.regularPrice - c.price)}` : "Combo"}</span>
-                        <h3>{c.name}</h3>
-                        <p>{c.includes}</p>
-                        <div className="dish-foot">
-                          <span className="price-group">
-                            <strong>{rupees(c.price)}</strong>
-                            {c.regularPrice && <s>{rupees(c.regularPrice)}</s>}
-                          </span>
-                          <AddControl qty={qtyOf(c.id)} label={t.add} onAdd={() => addLine(comboToItem(c))} onRemove={() => removeOne(c.id)} size="sm" />
-                        </div>
-                      </div>
-                    </article>
-                  ))}
+            {/* 3. Drinks & beverages */}
+            {inCategory("drinks").length > 0 && (
+              <section className="section drinks-section" id="drinks" aria-labelledby="drinks-title">
+                <div className="drinks-intro">
+                  <span className="eyebrow">{t.drinksEyebrow}</span>
+                  <h2 id="drinks-title">{t.drinks}</h2>
+                  <p>{t.drinksSub}</p>
+                  <button className="link" type="button" onClick={() => openCategory("drinks")}>
+                    {t.viewAllDrinks} <Icon name="arrow" size={16} />
+                  </button>
                 </div>
-                <div className="addons">
-                  <h3 className="addons-title">{t.goesWell}</h3>
-                  {extras.map((d) => (
-                    <div className="addon-row" key={d.id}>
-                      <button className="addon-open" type="button" onClick={() => setSelected(d)}>
-                        <Photo className="addon-photo" src={d.photo} alt={d.name} />
-                        <span className="addon-copy">
-                          <strong>{d.name}</strong>
-                          <span>{rupees(d.price)}</span>
-                        </span>
-                      </button>
-                      <AddControl qty={qtyOf(d.id)} label={t.add} onAdd={() => addLine(d)} onRemove={() => removeOne(d.id)} size="sm" />
-                    </div>
-                  ))}
+                <div className="drinks-grid">
+                  {inCategory("drinks").map((d) => <ProductCard key={d.id} {...cardProps(d)} size="tall" />)}
                 </div>
-              </div>
-            </section>
+              </section>
+            )}
 
-            {/* 4. Complete menu by category */}
+            {/* 4. Combos + desserts */}
+            <div className="promo-row" id="combos">
+              {combos[0] && <PromoCard {...promoProps(combos[0])} tone="deep" />}
+              <Shelf id="desserts" title={t.desserts} sub={t.dessertsSub} viewAll={t.viewAll} onViewAll={() => openCategory("desserts")}>
+                {inCategory("desserts").map((d) => <ProductCard key={d.id} {...cardProps(d)} size="sm" />)}
+              </Shelf>
+              {combos[1] && <PromoCard {...promoProps(combos[1])} tone="gold" />}
+            </div>
+
+            {/* 5. Complete menu by category */}
             <section className="section" id="menu" aria-labelledby="menu-title">
-              <SectionHead id="menu-title" eyebrow={t.menuEyebrow} title={t.menu} sub={t.menuSub}>
+              <SectionHead id="menu-title" title={t.menu} sub={t.menuSub}>
                 <label className="veg-toggle">
                   <input type="checkbox" checked={vegOnly} onChange={(e) => setVegOnly(e.target.checked)} />
                   <span className="switch" aria-hidden="true" />
                   <VegMark veg /> {t.vegOnly}
                 </label>
               </SectionHead>
-              <div className="category-grid" role="tablist" aria-label="Menu categories">
+              <div className="menu-chips" role="tablist" aria-label="Menu categories">
                 {categories.map((c) => (
                   <button
                     key={c.id}
-                    className={`category${activeCategory === c.id ? " is-active" : ""}`}
+                    className={`chip${activeCategory === c.id ? " is-on" : ""}`}
                     type="button"
                     role="tab"
                     aria-selected={activeCategory === c.id}
                     onClick={() => setActiveCategory(c.id)}
                   >
-                    <Photo className="category-photo" src={c.photo} alt="" />
-                    <span className="category-label">{c.label}</span>
-                    <small>{plural(countFor(c.id))}</small>
+                    {c.label} <small>{countFor(c.id)}</small>
                   </button>
                 ))}
               </div>
@@ -561,7 +688,7 @@ export default function Home() {
                 </h3>
                 {categoryItems.length > 0 ? (
                   <div className="list-grid">
-                    {categoryItems.map((d) => <DishRow key={d.id} {...rowProps(d)} />)}
+                    {categoryItems.map((d) => <DishRow key={d.id} {...cardProps(d)} />)}
                   </div>
                 ) : (
                   <p className="empty-state">No dishes here{vegOnly ? " with Veg only on" : ""}.</p>
@@ -579,7 +706,7 @@ export default function Home() {
         </button>
       )}
 
-      {/* 5. Compact service bar + persistent cart */}
+      {/* Compact service bar + persistent cart */}
       <footer className="service-bar">
         <div className="service-actions">
           <ServiceButton icon="bell" label={t.waiter} done={!!requests.waiter} doneLabel={t.requested} onClick={() => requestService("waiter", "A waiter is on the way")} />
@@ -636,7 +763,7 @@ export default function Home() {
                   <div className="drawer-empty">
                     <Icon name="bag" size={30} />
                     <p>{t.empty}</p>
-                    <button className="cta-outline" type="button" onClick={() => { setDrawer("closed"); scrollTo("menu"); }}>{t.browse}</button>
+                    <button className="cta-outline" type="button" onClick={() => { setDrawer("closed"); scrollTo("menu"); }}>{t.explore}</button>
                   </div>
                 ) : (
                   <>
@@ -719,6 +846,215 @@ function ServiceButton({
   );
 }
 
+function Shelf({
+  id,
+  title,
+  sub,
+  viewAll,
+  onViewAll,
+  children,
+}: {
+  id: string;
+  title: string;
+  sub: string;
+  viewAll: string;
+  onViewAll: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="shelf" id={id} aria-labelledby={`${id}-title`}>
+      <div className="shelf-head">
+        <h2 id={`${id}-title`}>{title}</h2>
+        <p className="muted">{sub}</p>
+        <button className="link" type="button" onClick={onViewAll}>
+          {viewAll} <Icon name="arrow" size={16} />
+        </button>
+      </div>
+      <div className="shelf-row">{children}</div>
+    </section>
+  );
+}
+
+function ProductCard({
+  item,
+  qty,
+  label,
+  onAdd,
+  onRemove,
+  onOpen,
+  badge,
+  size = "md",
+}: CardProps & { badge?: string; size?: "md" | "sm" | "tall" }) {
+  return (
+    <article className={`product product-${size}`}>
+      <button className="product-media" type="button" onClick={onOpen} aria-label={`See details for ${item.name}`}>
+        <Photo className="product-photo" src={item.photo} alt={item.name} />
+        {badge && <span className="product-badge">{badge}</span>}
+      </button>
+      <div className="product-body">
+        <button className="product-title" type="button" onClick={onOpen}>
+          <VegMark veg={item.veg} /> <span>{item.name}</span>
+        </button>
+        {size !== "sm" && (
+          <>
+            <SpiceMeter level={item.spice} />
+            <p className="product-desc">{item.description}</p>
+          </>
+        )}
+        <div className="product-foot">
+          <strong>{rupees(item.price)}</strong>
+          <AddControl qty={qty} label={label} name={item.name} onAdd={onAdd} onRemove={onRemove} size="round" />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+const PLATE_STEP_MS = 3000;
+
+// Endless slider of round plates. The centre dish is highlighted; the rest step aside, smaller and lighter.
+// Moves one dish every PLATE_STEP_MS, pauses on hover/touch, and supports arrows, tapping a side dish and swiping.
+function PlateCarousel({
+  items,
+  cardFor,
+  after,
+  detailsLabel,
+  prevLabel,
+  nextLabel,
+}: {
+  items: { dish: Item; tag: string }[];
+  cardFor: (item: Item) => CardProps;
+  after?: React.ReactNode;
+  detailsLabel: string;
+  prevLabel: string;
+  nextLabel: string;
+}) {
+  const n = items.length;
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [swipeX, setSwipeX] = useState<number | null>(null);
+  const go = (i: number) => setActive(((i % n) + n) % n);
+
+  useEffect(() => {
+    if (paused || n < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setTimeout(() => setActive((a) => (a + 1) % n), PLATE_STEP_MS);
+    return () => window.clearTimeout(id);
+  }, [active, paused, n]);
+
+  return (
+    <>
+      <div
+        className="best-stage"
+        aria-roledescription="carousel"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        onPointerDown={(e) => { if (e.pointerType !== "mouse") { setSwipeX(e.clientX); setPaused(true); } }}
+        onPointerUp={(e) => {
+          if (swipeX === null) return;
+          const dx = e.clientX - swipeX;
+          if (Math.abs(dx) > 50) go(active + (dx < 0 ? 1 : -1));
+          setSwipeX(null);
+          setPaused(false);
+        }}
+        onPointerCancel={() => { setSwipeX(null); setPaused(false); }}
+      >
+        {items.map(({ dish, tag }, i) => {
+          // Shortest distance from the active dish, so the loop wraps both ways.
+          let offset = (i - active + n) % n;
+          if (offset > n / 2) offset -= n;
+          const pos = offset === 0 ? "center" : Math.abs(offset) === 1 ? "near" : Math.abs(offset) === 2 ? "far" : "hidden";
+          const card = cardFor(dish);
+          const isCenter = pos === "center";
+          return (
+            <article
+              key={dish.id}
+              className={`carousel-item is-${pos}`}
+              style={{ "--offset": offset } as React.CSSProperties}
+              aria-hidden={!isCenter}
+              inert={pos === "hidden"}
+            >
+              <button
+                className="plate"
+                type="button"
+                onClick={isCenter ? card.onOpen : () => go(i)}
+                aria-label={isCenter ? `See details for ${dish.name}` : `Show ${dish.name}`}
+                tabIndex={isCenter ? 0 : -1}
+              >
+                <Photo className="plate-photo" src={dish.photo} alt={dish.name} />
+              </button>
+              <div className="plate-copy">
+                {tag && <span className="plate-rank">{tag}</span>}
+                <button className="plate-title" type="button" onClick={isCenter ? card.onOpen : () => go(i)} tabIndex={isCenter ? 0 : -1}>
+                  <VegMark veg={dish.veg} /> {dish.name}
+                </button>
+                <p>{dish.description}</p>
+                {isCenter && (
+                  <button className="link plate-more" type="button" onClick={card.onOpen}>
+                    {detailsLabel} <Icon name="arrow" size={16} />
+                  </button>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="best-nav">
+        <button className="best-arrow" type="button" onClick={() => go(active - 1)} aria-label={prevLabel}>
+          <Icon name="left" size={20} />
+        </button>
+        <span className="best-count" aria-hidden="true">
+          {String(active + 1).padStart(2, "0")}<small> / {String(n).padStart(2, "0")}</small>
+        </span>
+        <button className="best-arrow" type="button" onClick={() => go(active + 1)} aria-label={nextLabel}>
+          <Icon name="right" size={20} />
+        </button>
+        {after && <span className="best-nav-after">{after}</span>}
+      </div>
+    </>
+  );
+}
+
+function PromoCard({
+  combo,
+  qty,
+  label,
+  onAdd,
+  onRemove,
+  onOpen,
+  tone,
+}: {
+  combo: Combo;
+  qty: number;
+  label: string;
+  onAdd: () => void;
+  onRemove: () => void;
+  onOpen: () => void;
+  tone: "deep" | "gold";
+}) {
+  return (
+    <article className={`promo promo-${tone}`}>
+      <div className="promo-copy">
+        <span className="promo-tag">{combo.regularPrice ? `Save ${rupees(combo.regularPrice - combo.price)}` : "Combo"}</span>
+        <h3>{combo.name}</h3>
+        <p>{combo.includes}</p>
+        <div className="promo-foot">
+          <span className="price-group">
+            <strong>{rupees(combo.price)}</strong>
+            {combo.regularPrice && <s>{rupees(combo.regularPrice)}</s>}
+          </span>
+          <AddControl qty={qty} label={label} onAdd={onAdd} onRemove={onRemove} size="sm" />
+        </div>
+      </div>
+      <button className="promo-media" type="button" onClick={onOpen} aria-label={`See details for ${combo.name}`}>
+        <Photo className="promo-photo" src={combo.photo} alt={combo.name} />
+      </button>
+    </article>
+  );
+}
+
 function DishSheet({
   item,
   addLabel,
@@ -796,21 +1132,7 @@ function DishSheet({
   );
 }
 
-function DishRow({
-  item,
-  qty,
-  label,
-  onAdd,
-  onRemove,
-  onOpen,
-}: {
-  item: Item;
-  qty: number;
-  label: string;
-  onAdd: () => void;
-  onRemove: () => void;
-  onOpen: () => void;
-}) {
+function DishRow({ item, qty, label, onAdd, onRemove, onOpen }: CardProps) {
   return (
     <article className="dish-row">
       <button className="row-open" type="button" onClick={onOpen} aria-label={`See details for ${item.name}`}>

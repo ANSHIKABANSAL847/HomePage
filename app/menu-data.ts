@@ -30,7 +30,6 @@ const img = (id: string, w = 800) =>
 export const restaurant = {
   name: "Saffron & Stone",
   table: "08",
-  heroPhoto: img("1505253758473-96b7015fcd40", 1600),
 };
 
 export const categories = [
@@ -315,5 +314,23 @@ export const combos: Combo[] = [
   },
 ];
 
-// Small add-ons suggested next to the main flow. Ids refer to `dishes`.
-export const extraIds = ["butter-naan", "virgin-mojito", "cold-coffee", "gajar-halwa"];
+// More dishes shown in the bestsellers slider after the ranked ones.
+// They are NOT labelled as bestsellers (no order data); the slider shows their category instead.
+export const featuredIds = [
+  "butter-chicken",
+  "tandoori-chicken",
+  "chilli-paneer",
+  "masala-dosa",
+  "pav-bhaji",
+  "amritsari-chole",
+  "chicken-tikka",
+  "veg-momos",
+];
+
+// Background photos for the top banner slides, in order. Slide text lives in home.tsx (EN/HI).
+export const heroPhotos = [
+  { photo: img("1505253758473-96b7015fcd40", 1600), alt: "A freshly cooked pot of biryani" },
+  { photo: img("1546833999-b9f581a1996d", 1600), alt: "A thali with dal, sabzi, rice and roti" },
+  { photo: img("1606491956689-2ea866880c84", 1600), alt: "Pav bhaji with buttered pav" },
+];
+
